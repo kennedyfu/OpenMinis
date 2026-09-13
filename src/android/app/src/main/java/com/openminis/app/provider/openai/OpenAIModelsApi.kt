@@ -5,6 +5,7 @@ import com.openminis.app.data.model.LLMModel
 import com.openminis.app.data.model.normalizeModalities
 import com.openminis.app.logging.AppLogger
 import com.openminis.app.provider.ModelsDevApi
+import com.openminis.app.provider.OpencodeSession
 import com.openminis.app.provider.ProviderModelsCache
 import com.openminis.app.provider.applyUserAgentOverride
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +17,11 @@ import org.json.JSONObject
 
 object OpenAIModelsApi {
     private const val TAG = "OpenAIModelsApi"
-    private val client = OkHttpClient()
+    // [T-opencode-go-session] Model listing for a custom base URL can target
+    // opencode.ai, which requires the same session header as chat traffic.
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(OpencodeSession.interceptor)
+        .build()
     private val cache = ProviderModelsCache("openai")
 
     /**

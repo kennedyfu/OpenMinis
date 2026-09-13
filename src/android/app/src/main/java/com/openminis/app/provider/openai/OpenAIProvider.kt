@@ -15,6 +15,7 @@ import com.openminis.app.data.model.hasImageInput
 import com.openminis.app.provider.thinking.ThinkingResolveContext
 import com.openminis.app.provider.thinking.ThinkingRuleResolver
 import com.openminis.app.provider.LLMProvider
+import com.openminis.app.provider.OpencodeSession
 import com.openminis.app.provider.applyUserAgentOverride
 import com.openminis.app.provider.safeOptString
 import kotlinx.coroutines.CancellationException
@@ -445,6 +446,9 @@ class OpenAIProvider private constructor(
         // a local proxy got reused on every retry (silent infinite hang).
         .connectionPool(com.openminis.app.network.NetworkMonitor.sharedLLMConnectionPool)
         .eventListenerFactory { OkHttpNetTraceListener() }
+        // [T-opencode-go-session] Adds x-opencode-session/x-opencode-client to
+        // opencode.ai requests only; every other host passes through untouched.
+        .addInterceptor(OpencodeSession.interceptor)
         .build()
 
     /** Detect OpenRouter base URL. */

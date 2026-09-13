@@ -31,6 +31,7 @@ import com.openminis.app.logging.AppLogger
 import com.openminis.app.network.NetworkMonitor
 import com.openminis.app.offload.OffloadPermissionManager
 import com.openminis.app.provider.ModelsDevApi
+import com.openminis.app.provider.OpencodeSession
 import com.openminis.app.sandbox.ExecutionCoordinator
 import com.openminis.app.sandbox.MountedFolderCoordinator
 import com.openminis.app.sandbox.NativeOffloadServer
@@ -262,6 +263,12 @@ class MinisApp : Application(), ImageLoaderFactory {
         // log/crash list still find filesDir/logs on a safe-mode launch —
         // the exact launch where the user is trying to read the crash files.
         AppLogger.primeContext(this)
+
+        // [T-opencode-go-session] Hand the provider layer an app Context so the
+        // OpenCode Go session header can persist its id across launches. Same
+        // zero-I/O pattern as AppLogger.primeContext above: the actual
+        // SharedPreferences read happens lazily on the first opencode.ai request.
+        OpencodeSession.install(this)
 
         // [T-codex-fast-mode] Capture the app context + warm the Fast Mode
         // flag cache so the provider layer (no Context) can read it at
