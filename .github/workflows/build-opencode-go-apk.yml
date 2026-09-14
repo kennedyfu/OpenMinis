@@ -92,8 +92,9 @@ jobs:
             echo "APK_VARIANT=debug" >> "$GITHUB_ENV"
           fi
 
-      - name: Show rclone status
-        run: echo "rclone: ${RCLONE_BUILD:-unknown} | apk: ${APK_VARIANT:-unknown}"
+      - name: Show build status
+        run: |
+          echo "rclone: ${RCLONE_BUILD:-unknown} | apk: ${APK_VARIANT:-unknown}"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
