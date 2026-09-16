@@ -35,15 +35,18 @@ jobs:
 
       - name: Install SDK packages
         run: |
-          set -euxo pipefail
+          set -euxo
           export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           export ANDROID_SDK_ROOT="$ANDROID_HOME"
           echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
           SDKMGR="$(command -v sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")"
           "$SDKMGR" --version
+          # yes(1) dies with SIGPIPE once sdkmanager stops reading — without
+          # pipefail that is fine, the pipeline reports sdkmanager's status.
           yes | "$SDKMGR" --install "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;28.0.12433566" "cmake;3.22.1"
           "$SDKMGR" --list_installed
+          ls -1 "$ANDROID_HOME/ndk"
 
       - name: Install gomobile
         run: |
