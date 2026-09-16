@@ -1,6 +1,7 @@
 package com.openminis.app.provider
 
 import android.content.Context
+import com.openminis.app.logging.AppLogger
 import okhttp3.Interceptor
 import java.util.UUID
 
@@ -29,6 +30,7 @@ import java.util.UUID
  * and [com.openminis.app.provider.openai.OpenAIModelsApi]).
  */
 object OpencodeSession {
+    private const val TAG = "OpencodeSession"
     private const val PREFS = "opencode_session"
     private const val KEY_SESSION = "session_id"
     private const val HEADER_SESSION = "x-opencode-session"
@@ -46,6 +48,10 @@ object OpencodeSession {
     private var appContext: Context? = null
 
     private val processFallback: String by lazy { UUID.randomUUID().toString() }
+
+    /** One breadcrumb per process so Settings → Logs can prove the interceptor runs. */
+    @Volatile
+    private var loggedFirstRequest = false
 
     /** Zero-I/O handoff of the app Context; the prefs read happens lazily. */
     fun install(context: Context) {
@@ -79,6 +85,10 @@ object OpencodeSession {
         if (!isOpenCodeHost(request.url.host)) {
             chain.proceed(request)
         } else {
+            if (!loggedFirstRequest) {
+                loggedFirstRequest = true
+                AppLogger.info(TAG, "attached x-opencode-session to ${request.url.host}${request.url.encodedPath}")
+            }
             chain.proceed(
                 request.newBuilder()
                     .header(HEADER_SESSION, sessionId())
